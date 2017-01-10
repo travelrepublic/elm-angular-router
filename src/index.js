@@ -1,0 +1,46 @@
+require('./main.css');
+
+var Elm = require('./Main.elm');
+
+var root = document.getElementById('root');
+var app = Elm.Main.embed(root);
+var observer = new MutationObserver(triggerDigest);
+
+app.ports.watchDom.subscribe(obs);
+function obs(msg) {
+    observer.observe(root, { childList: true, subtree: true });
+}
+
+obs();
+
+//let's do some angular stuff in here ...
+angular.module('MyApp', [])
+    .component('pageOne', {
+    template: '<h1>Page One (angular)</h1>',
+    controller: function PageOneController () {
+        console.log('we are in page one');
+    }
+}).component('homePage', {
+    template: '<h1>Home Page (angular)</h1>',
+    controller: function HomePageController () {
+        console.log('We are in the home page now');
+    }
+}).component('pageThree', {
+    template: '<h1>Page Three (angular)</h1>',
+    controller: function () {
+        console.log('We are in page three now');
+    }
+});
+
+function triggerDigest() {
+    console.log('triggering a digest loop');
+    var $body = angular.element(document.body);            
+    var $rootScope = $body.injector().get('$rootScope');  
+    var $compile = $body.injector().get('$compile');
+    $rootScope.$apply(function () {                      
+        $compile($body)($rootScope);
+    });
+    observer.disconnect();
+}
+
+

@@ -28,11 +28,6 @@ angular.module('MyApp', [])
     controller: function HomePageController () {
         console.log('We are in the home page now');
     }
-}).component('pageThree', {
-    template: '<h1>Page Three (angular)</h1>',
-    controller: function () {
-        console.log('We are in page three now');
-    }
 }).component('pageFour', {
     template: '<h1>Page Four with id: {{$ctrl.customId}} (angular)</h1>',
     controller: function () {

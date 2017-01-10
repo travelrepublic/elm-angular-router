@@ -1,16 +1,17 @@
 module App exposing (..)
 
-import Html exposing (Html, text, div, button)
+import Html exposing (Html, text, div, button, h1)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Navigation
-import UrlParser as Url exposing ((</>), (<?>), s, int, stringParam, top, string)
+import UrlParser as Url exposing ((</>), (<?>), s, int, stringParam, top, string, custom)
 import PageOne
 import PageTwo
 import PageThree
 import PageFour
 import HomePage
 import Ports exposing (watchDom)
+import Regex as R
 
 
 type alias Model =
@@ -33,8 +34,25 @@ type Route
     = HomePage
     | PageOne
     | PageTwo
-    | PageThree
+    | PageThree String
     | PageFour Int
+
+guidRegex =
+    R.regex "^[\\w]{8}-[\\w]{4}-[\\w]{4}-[\\w]{4}-[\\w]{12}$"
+
+
+regexParser regex =
+    custom "REGEX" 
+        (\s ->
+            if R.contains regex s then
+                Ok s
+            else 
+                Err "String does not match supplied regex")
+
+
+guidParser =
+    regexParser guidRegex
+
 
 
 route : Url.Parser (Route -> a) a
@@ -43,7 +61,7 @@ route =
         [ Url.map HomePage top
         , Url.map PageOne (s "pageone")
         , Url.map PageTwo (s "pagetwo")
-        , Url.map PageThree (s "pagethree")
+        , Url.map PageThree (s "pagethree" </> guidParser) 
         , Url.map PageFour (s "pagefour" </> int)
         ]
 
@@ -57,6 +75,9 @@ urlChanged model location =
             case r of
                 Just PageTwo ->
                     False
+
+                Just (PageThree _) ->
+                    False     
 
                 _ ->
                     True
@@ -99,10 +120,16 @@ view : Model -> Html Msg
 view model =
     div []
         [ div []
-            (List.map menuItem [ "", "pageone", "pagetwo", "pagethree", "pagefour/1234" ])
+            (List.map menuItem 
+                [ ""
+                , "pageone"
+                , "pagetwo"
+                , "pagethree/d210716c-fe26-483d-abe1-b4dd5b8ecb1f"
+                , "pagethree/not-a-valid-guid"
+                , "pagefour/1234" ])
         , (case model.route of
             Nothing ->
-                div [] [ text "we don't have a route selected" ]
+                h1 [class "invalid"] [ text "Invalid route" ]
 
             Just r ->
                 case r of
@@ -115,8 +142,8 @@ view model =
                     PageTwo ->
                         PageTwo.view
 
-                    PageThree ->
-                        PageThree.view
+                    PageThree guid ->
+                        PageThree.view guid
 
                     PageFour id ->
                         PageFour.view id

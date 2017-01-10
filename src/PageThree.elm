@@ -1,8 +1,10 @@
 module PageThree exposing (..)
 
-import Html exposing (Html, text, div, button, node)
+import Html exposing (Html, text, div, button, h1)
 import Html.Events exposing (onClick)
 
 
-view =
-    node "page-three" [] []
+view guid =
+    h1 
+        [] 
+        [ text ("Page Three (Elm) " ++ guid) ]

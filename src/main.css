@@ -7,3 +7,6 @@ body {
     min-width: 100px;
     margin:10px;
 }
+.invalid {
+    color:#ff0000;
+}

@@ -1,12 +1,14 @@
 module App exposing (..)
 
 import Html exposing (Html, text, div, button)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Navigation
 import UrlParser as Url exposing ((</>), (<?>), s, int, stringParam, top, string)
 import PageOne
 import PageTwo
 import PageThree
+import PageFour
 import HomePage
 import Ports exposing (watchDom)
 
@@ -32,6 +34,7 @@ type Route
     | PageOne
     | PageTwo
     | PageThree
+    | PageFour Int
 
 
 route : Url.Parser (Route -> a) a
@@ -41,6 +44,7 @@ route =
         , Url.map PageOne (s "pageone")
         , Url.map PageTwo (s "pagetwo")
         , Url.map PageThree (s "pagethree")
+        , Url.map PageFour (s "pagefour" </> int)
         ]
 
 
@@ -79,15 +83,23 @@ update msg model =
 
 menuItem address =
     button
-        [ onClick (NewUrl address) ]
-        [ text address ]
+        [ class "menu-item"
+        , onClick (NewUrl ("/" ++ address))
+        ]
+        [ text
+            (if address == "" then
+                "home"
+             else
+                address
+            )
+        ]
 
 
 view : Model -> Html Msg
 view model =
     div []
         [ div []
-            (List.map menuItem [ "/", "pageone", "pagetwo", "pagethree" ])
+            (List.map menuItem [ "", "pageone", "pagetwo", "pagethree", "pagefour/1234" ])
         , (case model.route of
             Nothing ->
                 div [] [ text "we don't have a route selected" ]
@@ -105,6 +117,9 @@ view model =
 
                     PageThree ->
                         PageThree.view
+
+                    PageFour id ->
+                        PageFour.view id
           )
         ]
 

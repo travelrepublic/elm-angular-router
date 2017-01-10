@@ -33,6 +33,14 @@ angular.module('MyApp', [])
     controller: function () {
         console.log('We are in page three now');
     }
+}).component('pageFour', {
+    template: '<h1>Page Four with id: {{$ctrl.customId}} (angular)</h1>',
+    controller: function () {
+        console.log('We are in page four now');
+    },
+    bindings: {
+        customId: '<'
+    }
 });
 
 function triggerDigest() {

@@ -1,3 +1,9 @@
 body {
   margin: 0;
+  padding:10px;
+}
+.menu-item {
+    min-height: 40px;
+    min-width: 100px;
+    margin:10px;
 }

@@ -5,9 +5,12 @@ var Elm = require('./Main.elm');
 var root = document.getElementById('root');
 var app = Elm.Main.embed(root);
 var observer = new MutationObserver(triggerDigest);
+var compile = false;
 
 app.ports.watchDom.subscribe(obs);
-function obs(msg) {
+function obs(c) {
+    console.log('starting to observe the dom');
+    compile = c;
     observer.observe(root, { childList: true, subtree: true });
 }
 
@@ -33,6 +36,10 @@ angular.module('MyApp', [])
 });
 
 function triggerDigest() {
+    if(!compile) {
+        console.log('no need to compile this route');
+        return;
+    }
     console.log('triggering a digest loop');
     var $body = angular.element(document.body);            
     var $rootScope = $body.injector().get('$rootScope');  

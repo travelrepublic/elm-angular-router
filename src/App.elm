@@ -18,9 +18,7 @@ type alias Model =
 
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
-    ( Model (Url.parsePath route location)
-    , (watchDom "")
-    )
+    urlChanged (Model Nothing) location
 
 
 type Msg
@@ -46,6 +44,24 @@ route =
         ]
 
 
+urlChanged model location =
+    let
+        r =
+            Url.parsePath route location
+
+        compile =
+            case r of
+                Just PageTwo ->
+                    False
+
+                _ ->
+                    True
+    in
+        ( { model | route = r }
+        , (watchDom compile)
+        )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -58,9 +74,7 @@ update msg model =
             )
 
         UrlChange location ->
-            ( { model | route = Url.parsePath route location }
-            , (watchDom "")
-            )
+            urlChanged model location
 
 
 menuItem address =

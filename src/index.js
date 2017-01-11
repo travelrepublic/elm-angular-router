@@ -47,7 +47,9 @@ function triggerDigest() {
     var $body = angular.element(document.body);            
     var $rootScope = $body.injector().get('$rootScope');  
     var $compile = $body.injector().get('$compile');
-    $compile($body)($rootScope);
+    $rootScope.$apply(function() {
+        $compile($body)($rootScope);
+    });
     observer.disconnect();
 }
 

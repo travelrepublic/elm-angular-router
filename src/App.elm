@@ -12,6 +12,7 @@ import PageFour
 import HomePage
 import Ports exposing (watchDom)
 import Regex as R
+import Ports exposing (newUrl)
 
 
 type alias Model =
@@ -153,4 +154,4 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    newUrl NewUrl

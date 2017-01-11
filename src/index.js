@@ -19,9 +19,12 @@ obs();
 //let's do some angular stuff in here ...
 angular.module('MyApp', [])
     .component('pageOne', {
-    template: '<h1>Page One (angular)</h1>',
-    controller: function PageOneController () {
-        console.log('we are in page one');
+    template:'<button ng-click="cm.pageFour()">Go to page four</button>',
+    controllerAs: 'cm',    
+    controller: function PageOneController ($location) {
+        this.pageFour = function() {
+            $location.path('pagefour/5678');
+        }
     }
 }).component('homePage', {
     template: '<h1>Home Page (angular)</h1>',
@@ -36,6 +39,17 @@ angular.module('MyApp', [])
     bindings: {
         customId: '<'
     }
+}).config(function($locationProvider, $provide) {
+    $locationProvider.html5Mode(true);   
+
+    $provide.decorator('$location', ['$delegate', 
+        function $locationDecorator($delegate) {
+            var p = $delegate.path;
+            $delegate.path = function(url) {
+                app.ports.newUrl.send(url);
+            }
+            return $delegate;
+        }]);
 });
 
 function triggerDigest() {

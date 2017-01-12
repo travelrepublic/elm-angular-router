@@ -7,6 +7,16 @@ var app = Elm.Main.embed(root);
 var observer = new MutationObserver(triggerDigest);
 var compile = false;
 var listenForRouteChanges = true;
+var ignoreNextPushState = false;
+
+var ps = window.history.pushState;
+window.history.pushState = function() {
+    if(ignoreNextPushState) {
+        ignoreNextPushState = false;
+        return;
+    }
+    ps.apply(window.history, arguments);
+}
 
 app.ports.watchDom.subscribe(obs);
 function obs(c) {
@@ -27,28 +37,33 @@ angular.module('MyApp', [])
         this.pageFour = function() {
             $location.path('pagefour/5678');
         }
+        console.log('We are in page one now at ' + $location.absUrl());
     }
 }).component('homePage', {
     template: '<h1>Home Page (angular)</h1>',
-    controller: function HomePageController () {
-        console.log('We are in the home page now');
+    controller: function HomePageController ($location) {
+        console.log('We are in the home page now at ' + $location.absUrl());
     }
 }).component('pageFour', {
     template: '<h1>Page Four with id: {{$ctrl.customId}} (angular)</h1>',
-    controller: function () {
-        console.log('We are in page four now');
+    controller: function ($location) {
+        console.log('We are in page four now at ' + $location.absUrl());
     },
     bindings: {
         customId: '<'
     }
 }).config(function($locationProvider, $provide) {
     $locationProvider.html5Mode(true);   
-}).run(function($rootScope) {
-    $rootScope.$on('$locationChangeStart', function(e, newUrl, oldUrl){
+}).run(function($rootScope, $location) {
+    //if we use $locationChangeSuccess angular will already have added an entry to the history
+    $rootScope.$on('$locationChangeSuccess', function(e, newUrl, oldUrl){
         if(!listenForRouteChanges) {
             return;
         }
         app.ports.newUrl.send(newUrl);
+        //at this point angular will have added a history state
+        //already so we should ignore the next one
+        ignoreNextPushState = true;
         console.log('location change from angular ' + newUrl);
     });
 });
@@ -58,10 +73,12 @@ function triggerDigest() {
         console.log('no need to compile this route');
         return;
     }
-    console.log('triggering a digest loop');
     var $body = angular.element(document.body);            
     var $rootScope = $body.injector().get('$rootScope');  
+    var $location = $body.injector().get('$location');  
     var $compile = $body.injector().get('$compile');
+    $location.$$parseLinkUrl(window.location.href);
+    console.log('triggering a digest loop. We are at ' + window.location.href + ' angular thinks we are at ' + $location.path());
     $rootScope.$apply(function() {
         $compile($body)($rootScope);
     });

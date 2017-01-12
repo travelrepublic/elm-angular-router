@@ -38,22 +38,23 @@ type Route
     | PageThree String
     | PageFour Int
 
+
 guidRegex =
     R.regex "^[\\w]{8}-[\\w]{4}-[\\w]{4}-[\\w]{4}-[\\w]{12}$"
 
 
 regexParser regex =
-    custom "REGEX" 
+    custom "REGEX"
         (\s ->
             if R.contains regex s then
                 Ok s
-            else 
-                Err "String does not match supplied regex")
+            else
+                Err "String does not match supplied regex"
+        )
 
 
 guidParser =
     regexParser guidRegex
-
 
 
 route : Url.Parser (Route -> a) a
@@ -62,7 +63,7 @@ route =
         [ Url.map HomePage top
         , Url.map PageOne (s "pageone")
         , Url.map PageTwo (s "pagetwo")
-        , Url.map PageThree (s "pagethree" </> guidParser) 
+        , Url.map PageThree (s "pagethree" </> guidParser)
         , Url.map PageFour (s "pagefour" </> int)
         ]
 
@@ -78,7 +79,7 @@ urlChanged model location =
                     False
 
                 Just (PageThree _) ->
-                    False     
+                    False
 
                 _ ->
                     True
@@ -121,16 +122,18 @@ view : Model -> Html Msg
 view model =
     div []
         [ div []
-            (List.map menuItem 
+            (List.map menuItem
                 [ ""
                 , "pageone"
                 , "pagetwo"
                 , "pagethree/d210716c-fe26-483d-abe1-b4dd5b8ecb1f"
                 , "pagethree/not-a-valid-guid"
-                , "pagefour/1234" ])
+                , "pagefour/1234"
+                ]
+            )
         , (case model.route of
             Nothing ->
-                h1 [class "invalid"] [ text "Invalid route" ]
+                h1 [ class "invalid" ] [ text "Invalid route" ]
 
             Just r ->
                 case r of

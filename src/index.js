@@ -6,11 +6,13 @@ var root = document.getElementById('root');
 var app = Elm.Main.embed(root);
 var observer = new MutationObserver(triggerDigest);
 var compile = false;
+var listenForRouteChanges = true;
 
 app.ports.watchDom.subscribe(obs);
 function obs(c) {
     console.log('starting to observe the dom');
     compile = c;
+    listenForRouteChanges = false;
     observer.observe(root, { childList: true, subtree: true });
 }
 
@@ -19,7 +21,7 @@ obs();
 //let's do some angular stuff in here ...
 angular.module('MyApp', [])
     .component('pageOne', {
-    template:'<button ng-click="cm.pageFour()">Go to page four</button>',
+    template:'<div><button ng-click="cm.pageFour()">Go to page four</button> And <a href="pagefour/3456">Go to page four a different way</a></div>',
     controllerAs: 'cm',    
     controller: function PageOneController ($location) {
         this.pageFour = function() {
@@ -41,15 +43,14 @@ angular.module('MyApp', [])
     }
 }).config(function($locationProvider, $provide) {
     $locationProvider.html5Mode(true);   
-
-    $provide.decorator('$location', ['$delegate', 
-        function $locationDecorator($delegate) {
-            var p = $delegate.path;
-            $delegate.path = function(url) {
-                app.ports.newUrl.send(url);
-            }
-            return $delegate;
-        }]);
+}).run(function($rootScope) {
+    $rootScope.$on('$locationChangeStart', function(e, newUrl, oldUrl){
+        if(!listenForRouteChanges) {
+            return;
+        }
+        app.ports.newUrl.send(newUrl);
+        console.log('location change from angular ' + newUrl);
+    });
 });
 
 function triggerDigest() {
@@ -65,6 +66,7 @@ function triggerDigest() {
         $compile($body)($rootScope);
     });
     observer.disconnect();
+    listenForRouteChanges = true;
 }
 
 

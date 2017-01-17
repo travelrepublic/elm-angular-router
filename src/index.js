@@ -8,6 +8,7 @@ var observer = new MutationObserver(triggerDigest);
 var compile = false;
 var listenForRouteChanges = true;
 var ignoreNextPushState = false;
+var activeScope = null;
 
 var ps = window.history.pushState;
 window.history.pushState = function() {
@@ -69,6 +70,10 @@ angular.module('MyApp', [])
 });
 
 function triggerDigest() {
+    if(activeScope) {
+        activeScope.$destroy();
+    }
+
     if(!compile) {
         console.log('no need to compile this route');
         return;
@@ -77,10 +82,13 @@ function triggerDigest() {
     var $rootScope = $body.injector().get('$rootScope');  
     var $location = $body.injector().get('$location');  
     var $compile = $body.injector().get('$compile');
+
+    activeScope = $rootScope.$new();
+
     $location.$$parseLinkUrl(window.location.href);
     console.log('triggering a digest loop. We are at ' + window.location.href + ' angular thinks we are at ' + $location.path());
-    $rootScope.$apply(function() {
-        $compile($body)($rootScope);
+    activeScope.$apply(function() {
+        $compile($body)(activeScope);
     });
     observer.disconnect();
     listenForRouteChanges = true;
